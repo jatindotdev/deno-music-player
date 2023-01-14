@@ -9,6 +9,6 @@ A simple music player using deno deploy
 # Now Run
 deployctl deploy --project=<your_project_name> <entry_point>
 
-# <entry_point> eg. index.mjs in my case
+# <entry_point> eg. backend.ts in my case
 
 ```
