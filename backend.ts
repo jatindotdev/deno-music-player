@@ -5,11 +5,35 @@ import {
 } from 'https://deno.land/x/oak@v11.1.0/mod.ts';
 import * as ytdl from 'https://deno.land/x/ytdl_core@v0.1.1/mod.ts';
 import YouTube from 'https://deno.land/x/youtube_sr@v4.3.4-deno/mod.ts';
+import html from 'https://deno.land/x/htm@0.1.3/mod.ts';
+import UnoCSS from 'https://deno.land/x/htm@0.1.3/plugins/unocss.ts';
+import { content } from './frontend.tsx';
+
+html.use(UnoCSS());
 
 const router = new Router();
 
 router.get('/', async (ctx) => {
-  await ctx.send({ root: 'dist/', index: 'index.html' });
+  ctx.response.body = (
+    await html({
+      lang: 'en',
+      title: 'Music Player',
+      links: [
+        {
+          rel: 'shortcut icon',
+          href: 'assets/logo.svg',
+        },
+      ],
+      styles: [`* { outline: none; }`],
+      scripts: [
+        {
+          src: 'assets/script.js',
+          defer: true,
+        },
+      ],
+      body: content(),
+    })
+  ).body;
 });
 
 router.get('/audio', async (ctx) => {
@@ -19,7 +43,9 @@ router.get('/audio', async (ctx) => {
     return (ctx.response.body = { message: 'query not provided' });
   }
   const searchData = await YouTube.searchOne(query);
-  const { videoDetails, formats } = await ytdl.getInfo(searchData.url);
+  const { videoDetails, formats } = await ytdl.getInfo(
+    searchData.url || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+  );
   const audioFormat = ytdl.chooseFormat(formats, {
     filter: 'audioonly',
     quality: 'highestaudio',
@@ -38,10 +64,9 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 app.use(async (context) => {
-  if (context.request.url.pathname.startsWith('/assets')) {
-    await send(context, context.request.url.pathname, {
-      root: `${Deno.cwd()}/dist/`,
-    });
+  const pathname = context.request.url.pathname;
+  if (pathname.startsWith('/assets')) {
+    await send(context, pathname, { root: Deno.cwd() });
   }
 });
 
