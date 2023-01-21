@@ -33,19 +33,21 @@ document.addEventListener("keyup", async (event) => {
       inputField.focus();
     }
 
-    if (digits.includes(event.code)) {
-      audioPlayer.currentTime =
-        (digits.indexOf(event.code) / 10) * audioPlayer.duration;
-    }
+    if (audioPlayer.duration) {
+      if (digits.includes(event.code)) {
+        audioPlayer.currentTime =
+          (digits.indexOf(event.code) / 10) * audioPlayer.duration;
+      }
 
-    if (event.code === "ArrowRight") {
-      if (audioPlayer.duration - (audioPlayer.currentTime + 10) < 0) return;
-      audioPlayer.currentTime += 10;
-    }
+      if (event.code === "ArrowRight") {
+        if (audioPlayer.duration - (audioPlayer.currentTime + 10) < 0) return;
+        audioPlayer.currentTime += 10;
+      }
 
-    if (event.code === "ArrowLeft") {
-      if (audioPlayer.currentTime - 10 < 0) return;
-      audioPlayer.currentTime -= 10;
+      if (event.code === "ArrowLeft") {
+        if (audioPlayer.currentTime - 10 < 0) return;
+        audioPlayer.currentTime -= 10;
+      }
     }
 
     if (event.code === "Space") {
