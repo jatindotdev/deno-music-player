@@ -37,25 +37,81 @@ router.get("/", async (ctx) => {
 });
 
 router.get("/audio", async (ctx) => {
-  const query = ctx.request.url.searchParams.get("query");
-  if (!query) {
-    ctx.response.status = 400;
-    return (ctx.response.body = { message: "query not provided" });
+  try {
+    const query = ctx.request.url.searchParams.get("query");
+    if (!query) {
+      throw {
+        status: 400,
+        message: "query not provided",
+      };
+    }
+    const searchData = await YouTube.searchOne(query);
+    const { videoDetails, formats } = await ytdl.getInfo(
+      searchData.url || "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    );
+    const audioFormat = ytdl.chooseFormat(formats, {
+      filter: "audioonly",
+      quality: "highestaudio",
+    });
+    ctx.response.body = {
+      title: videoDetails.title,
+      albumArt: videoDetails.thumbnails[videoDetails.thumbnails.length - 1],
+      videoURL: videoDetails.video_url,
+      url: audioFormat.url,
+    };
+  } catch (e) {
+    ctx.response.status = e.status ?? 500;
+    ctx.response.body = {
+      success: false,
+      message: e.message ?? "Internal Server Error",
+    };
   }
-  const searchData = await YouTube.searchOne(query);
-  const { videoDetails, formats } = await ytdl.getInfo(
-    searchData.url || "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-  );
-  const audioFormat = ytdl.chooseFormat(formats, {
-    filter: "audioonly",
-    quality: "highestaudio",
-  });
-  ctx.response.body = {
-    title: videoDetails.title,
-    albumArt: videoDetails.thumbnails[videoDetails.thumbnails.length - 1],
-    videoURL: videoDetails.video_url,
-    url: audioFormat.url,
-  };
+});
+
+router.get("/play", async (ctx) => {
+  try {
+    const query = ctx.request.url.searchParams.get("query");
+    if (!query) {
+      throw {
+        status: 400,
+        message: "query not provided",
+      };
+    }
+    const info = await ytdl.getInfo(query);
+
+    const audio = ytdl.chooseFormat(info.formats, {
+      quality: "highestaudio",
+      filter: "audioonly",
+    });
+
+    ctx.response.body = await fetch(audio.url).then((res) => res.body);
+  } catch (e) {
+    ctx.response.status = e.status ?? 500;
+    ctx.response.body = {
+      success: false,
+      message: e.message ?? "Internal Server Error",
+    };
+  }
+});
+
+router.get("/search", async (ctx) => {
+  try {
+    const query = ctx.request.url.searchParams.get("query");
+    if (!query) {
+      throw {
+        status: 400,
+        message: "query not provided",
+      };
+    }
+    const searchData = await YouTube.search(query, { type: "video" });
+    ctx.response.body = searchData;
+  } catch (e) {
+    ctx.response.status = e.status ?? 500;
+    ctx.response.body = {
+      success: false,
+      message: e.message ?? "Internal Server Error",
+    };
+  }
 });
 
 const app = new Application();

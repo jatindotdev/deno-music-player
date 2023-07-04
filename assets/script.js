@@ -11,13 +11,13 @@ inputField.focus();
 
 const handleSearch = async () => {
   if (searchQuery.length > 0) {
-    const query = searchQuery.toLowerCase().split(" ").join("+");
-    const res = await fetch(`/audio?query=${query}`);
+    const query = encodeURIComponent(searchQuery);
+    const res = await fetch(`/search?query=${query}`);
     const data = await res.json();
 
-    albumImg.src = data["albumArt"]["url"];
-    songName.textContent = data["title"];
-    audioPlayer.src = data["url"];
+    albumImg.src = data[0]["thumbnail"]["url"];
+    songName.textContent = data[0]["title"];
+    audioPlayer.src = `/play?query=${data[0]["url"]}`;
     audioPlayer.play();
     inputField.value = "";
   }
