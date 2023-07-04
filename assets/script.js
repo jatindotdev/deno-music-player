@@ -17,7 +17,7 @@ const handleSearch = async () => {
 
     albumImg.src = data[0]["thumbnail"]["url"];
     songName.textContent = data[0]["title"];
-    audioPlayer.src = `/play?query=${data[0]["url"]}`;
+    audioPlayer.src = `/play?query=${encodeURIComponent(data[0]["url"])}`;
     audioPlayer.play();
     inputField.value = "";
   }
