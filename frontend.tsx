@@ -7,9 +7,11 @@ export function content() {
       <span class="text-2xl fw-500">Music Player</span>
       <img
         id="album-img"
-        class="max-h-[300px] rounded-lg mb-4"
-        src="/assets/banner.png"
+        class="rounded-lg mb-4"
+        style={{ width: "auto", height: "300px", objectFit: "cover" }}
+        src="/assets/banner.webp"
         alt="Album Image"
+        preload="true"
       />
       <h1
         id="song-name"
